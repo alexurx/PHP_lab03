@@ -33,6 +33,25 @@ function findTransactionById(int $id): ?array {
     return null;
 }
 
+/** 
+ * Функция удаления транзакции по ID
+ * 
+ * @param int $id - ID транзакции
+ * @return void
+ */
+function deleteTransactionById(int $id): void {
+    global $transactions;
+    $transactions = array_values(array_filter($transactions, fn($t) => $t["id"] !== $id));
+}
+
+/** Обработка удаления транзакции 
+ * 
+ * @var int $_POST["delete_id"] - ID транзакции для удаления
+ */
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["delete_id"])) {
+    deleteTransactionById((int)$_POST["delete_id"]);
+}
+
 /**
 * Функция поиска транзакции по части описания
 *
@@ -223,6 +242,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["add"])) {
             <th>Description</th>
             <th>Merchant</th>
             <th>Days Ago</th>
+            <th>Delete Transaction</th>
         </tr>
     </thead>
     <tbody>
@@ -234,12 +254,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["add"])) {
             <td><?= $t["description"] ?></td>
             <td><?= $t["merchant"] ?></td>
             <td><?= daysSinceTransaction($t["date"]) ?></td>
+            <td>
+                <form method="POST">
+                    <input type="hidden" name="delete_id" value="<?= $t["id"] ?>">
+                    <button type="submit">Delete</button>
+                </form>
+            </td>
         </tr>
         <?php endforeach; ?>
     </tbody>
     <tfoot>
         <tr>
-            <td colspan="5"><strong>Total:</strong></td>
+            <td colspan="6"><strong>Total:</strong></td>
             <td><strong><?= number_format(calculateTotalAmount($transactions), 2) ?> $</strong></td>
         </tr>
     </tfoot>
